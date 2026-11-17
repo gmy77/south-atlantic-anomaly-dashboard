@@ -1,0 +1,10 @@
+{
+  "name": "saa-observatory",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node test.mjs",
+    "test:offline": "node test.mjs --offline",
+    "deploy": "wrangler deploy"
+  }
+}

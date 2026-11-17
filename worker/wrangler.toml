@@ -1,0 +1,32 @@
+name = "saa-observatory"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+# Dashboard statica (public/). Le richieste /api/* non corrispondono a nessun
+# file e arrivano al Worker.
+[assets]
+directory = "../public"
+binding = "ASSETS"
+not_found_handling = "none"
+
+# Archivio. Chi pubblica una copia propria crea il suo database con
+#   npx wrangler d1 create saa-history
+# e mette qui l'identificativo che il comando stampa.
+[[d1_databases]]
+binding = "DB"
+database_name = "saa-history"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+# Due aggiornamenti al giorno (UTC). I feed letti coprono 3 giorni, quindi un
+# giro saltato si recupera al successivo. Aggiornamenti extra: POST /api/update
+# con il secret UPDATE_TOKEN (npx wrangler secret put UPDATE_TOKEN).
+[triggers]
+crons = ["7 6,18 * * *"]
+
+# I file GOES "3 giorni" pesano ~0,8 MB l'uno: interpretarli costa qualche
+# decina di ms di CPU, oltre i 10 ms del piano Free. Serve Workers Paid.
+[limits]
+cpu_ms = 5000
+
+[observability]
+enabled = true

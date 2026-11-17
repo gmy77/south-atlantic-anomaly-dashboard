@@ -1,0 +1,12 @@
+Anno,Stato_Modello,Lat_Minimo_P1_SudAmerica,Lon_Minimo_P1_SudAmerica,Intensita_P1_nT,Localizzazione_P1,Biforcazione_Attiva,Lat_Lobo_P2_SWAfrica,Lon_Lobo_P2_SWAfrica,Intensita_P2_nT,Velocita_Deriva_km_anno,Azimut_Gradi,Direzione,Area_Sotto_24000nT_M_km2,Area_Sotto_23000nT_M_km2,Tasso_SEU_Satellitari
+1840,"STORICO (GAUSS)",-19.2,-24.5,27500,"Sud Atlantico Centrale",NO,-33,14,29800,14.2,275,"275° (W)",0,0,"N/D (Era Pre-Spaziale)"
+1900,"STORICO IGRF-1",-21,-33.8,26100,"Atlantico Sud-Occidentale",NO,-33.5,13.8,28100,15.8,278,"278° (W)",0,0,"N/D (Era Pre-Spaziale)"
+1950,"STORICO",-22.8,-41.5,24750,"Largo di Rio de Janeiro",NO,-33.8,13.5,26400,17.5,281,"281° (WNW)",0.8,0,"N/D (Primi Razzi Sonda)"
+1970,"STORICO",-23.9,-45.4,24000,"Costa San Paolo (Brasile)",NO,-34,13.2,25450,21.6,284,"284° (WNW)",3.1,0,"Basso (~15 SEU/giorno LEO)"
+1990,"STORICO",-24.8,-49.6,23320,"Paraná / Brasile Merid.",NO,-34.1,12.9,24480,22.1,285,"285° (WNW)",6.4,0.9,"Medio (~48 SEU/giorno Hubble)"
+2000,"STORICO CHAMP",-25.2,-51.8,22980,"Confine Brasile / Paraguay",NO,-34.2,12.7,23920,20.8,286,"286° (WNW)",8.1,1.9,"Medio-Alto (~72 SEU/giorno)"
+2010,"ACCELERAZIONE",-25.6,-54.5,22640,"Paraguay Orientale",SI,-34.3,12.5,23380,24.2,289,"289° (WNW)",9.6,3.1,"Alto (~110 SEU/giorno)"
+2015,"SWARM BIFURCATION",-25.8,-55.9,22460,"Paraguay Centrale",SI,-34.3,12.3,23140,21.5,288,"288° (WNW)",10.3,3.7,"Alto (~135 SEU/giorno)"
+2020,"IGRF-13",-26,-57.2,22290,"Asunción (Paraguay)",SI,-34.2,12.2,22920,20.1,288,"288° (WNW)",10.9,4.3,"Molto Alto (~165 SEU/giorno)"
+2026,"ATTUALE (IGRF-14)",-26.1,-58.4,22150,"Paraguay / Nord Argentina",SI,-34.2,12.1,22680,20.4,288,"288° (WNW)",11.4,4.8,"Critico (~195 SEU/giorno LEO)"
+2035,"PROIEZIONE MODELLO",-26.4,-60.2,21910,"Chaco (Argentina Settentr.)",SI,-34.1,11.8,22310,20.2,289,"289° (WNW)",12.3,5.7,"Critico+ (~230 SEU/giorno est.)"
