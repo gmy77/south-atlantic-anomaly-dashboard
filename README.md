@@ -1,6 +1,8 @@
 # South Atlantic Anomaly Observatory
 
-Dashboard dell'**Anomalia del Sud Atlantico (SAA)** che gira tutta su Cloudflare:
+Dashboard dell'**Anomalia del Sud Atlantico (SAA)** che gira tutta su Cloudflare.
+
+**Online:** https://saa-observatory.gimmy077.workers.dev
 
 - **Cloudflare Worker** con **Cron Trigger** due volte al giorno (06:07 e 18:07 UTC):
   legge i feed NOAA SWPC e accumula lo storico in **D1** (SQLite). I feed NOAA

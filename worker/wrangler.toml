@@ -15,7 +15,7 @@ not_found_handling = "none"
 [[d1_databases]]
 binding = "DB"
 database_name = "saa-history"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "21e0fbff-7a41-4c12-900a-8787a1de529a"
 
 # Due aggiornamenti al giorno (UTC). I feed letti coprono 3 giorni, quindi un
 # giro saltato si recupera al successivo. Aggiornamenti extra: POST /api/update
@@ -27,6 +27,10 @@ crons = ["7 6,18 * * *"]
 # decina di ms di CPU, oltre i 10 ms del piano Free. Serve Workers Paid.
 [limits]
 cpu_ms = 5000
+
+# indirizzo pubblico su workers.dev, niente URL di anteprima per versione
+workers_dev = true
+preview_urls = false
 
 [observability]
 enabled = true

@@ -4,3 +4,4 @@ worker/.wrangler/
 .wrangler/
 .dev.vars
 *.log
+TOKEN_AGGIORNAMENTO.txt
