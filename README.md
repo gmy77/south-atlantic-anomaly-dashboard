@@ -11,14 +11,28 @@ Dashboard dell'**Anomalia del Sud Atlantico (SAA)** che gira tutta su Cloudflare
 - **API JSON/CSV** e **dashboard** serviti dallo stesso indirizzo
   (Workers Static Assets).
 - **Campo geomagnetico IGRF-14** calcolato nel browser dai 195 coefficienti
-  ufficiali IAGA: mappa colorata e isolinee di F per ogni anno 1900–2030, al
-  suolo o a 400 km (quota ISS).
+  ufficiali IAGA: mappe e isolinee per ogni anno 1900–2030, al suolo o a
+  400 km (quota ISS), di intensità F, variazione annua dF/dt, componenti H e
+  Z, inclinazione e declinazione. Clic su un punto: tutti i valori e la storia
+  dal 1900 (all'apertura: Udine).
+- **ISS in tempo reale** (wheretheiss.at, tramite il Worker con cache di 20 s):
+  posizione, traccia ±1 h colorata dove attraversa la SAA (F < 22.000 nT alla
+  sua quota), tempo al prossimo ingresso/uscita.
+- **Statistiche dell'archivio**: record, ultimi 30 giorni, distribuzione del Kp,
+  episodi di tempesta (Kp ≥ 5, Dst ≤ −50 nT, protoni S1+).
+- **Grafici del modello**: minimo, area, deriva, dipolo terrestre (momento e
+  polo), velocità di indebolimento P1/P2, spostamento del minimo.
+- Un pulsante **?** accanto a ogni sezione spiega cosa si sta guardando
+  (testi in `public/help.js`). Icona in `public/icon.svg` (+ PNG e manifest).
+- Vista condivisibile dall'indirizzo: `?q=F|SV|H|Z|I|D&anno=1990&quota=400`.
 
 ## Cosa c'è
 
 | Percorso | Contenuto |
 |---|---|
-| `public/index.html` | dashboard (Leaflet + Chart.js) |
+| `public/index.html`, `public/app.js` | dashboard (Leaflet + Chart.js) |
+| `public/help.js` | testi dei pulsanti «?» |
+| `public/icon.svg` | icona (PNG generati con Edge headless) |
 | `public/igrf.js` | sintesi IGRF-14 grado 13 (Legendre di Schmidt, conversione WGS84) |
 | `public/igrf14-coeffs.js` | coefficienti, generati da `tools/build-coeffs.mjs` |
 | `worker/src/index.js` | Worker: cron, D1, API |
@@ -44,6 +58,9 @@ Ogni giro riscrive solo le ultime 6 ore già in archivio più i punti nuovi;
 saltato si recupera al successivo, perché i file coprono 3 giorni.
 
 ## API
+
+Non sono pubblicizzate nella pagina (scelta di Gimmy); restano utili per altri
+programmi. Tutte in sola lettura tranne `/api/update`, che vuole la chiave.
 
 ```
 GET  /api/latest                                   ultimi valori + scale NOAA S/G

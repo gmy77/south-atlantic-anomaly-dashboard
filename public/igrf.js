@@ -115,7 +115,39 @@ export function field(latDeg, lonDeg, altKm, year, coeffs = coefficientsFor(year
   }
   bp /= st;
   const F = Math.sqrt(br * br + bt * bt + bp * bp);
-  return { F, br, bt, bp };
+  // componenti locali: X verso Nord, Y verso Est, Z verso il basso,
+  // riportate dal riferimento geocentrico a quello geodetico
+  const xc = -bt, zc = -br;
+  const X = xc * cd + zc * sd;
+  const Z = zc * cd - xc * sd;
+  const Y = bp;
+  const H = Math.sqrt(X * X + Y * Y);
+  const I = (Math.atan2(Z, H) * 180) / Math.PI; // inclinazione, + verso il basso
+  const D = (Math.atan2(Y, X) * 180) / Math.PI; // declinazione, + verso Est
+  return { F, X, Y, Z, H, I, D, br, bt, bp };
+}
+
+/** Variazione secolare di F (nT/anno) per differenza centrata di un anno. */
+export function secularF(lat, lon, altKm, year) {
+  const y0 = Math.max(YEAR_MIN, year - 0.5);
+  const y1 = Math.min(YEAR_MAX, year + 0.5);
+  return (intensity(lat, lon, altKm, y1) - intensity(lat, lon, altKm, y0)) / (y1 - y0);
+}
+
+/**
+ * Dipolo terrestre dai coefficienti di grado 1:
+ *   B0     campo all'equatore del dipolo (nT)
+ *   moment momento magnetico (10^22 A·m²)
+ *   poleLat, poleLon  polo geomagnetico Nord (gradi)
+ */
+export function dipole(year) {
+  const { g, h } = coefficientsFor(year);
+  const g10 = g[1][0], g11 = g[1][1], h11 = h[1][1];
+  const B0 = Math.sqrt(g10 * g10 + g11 * g11 + h11 * h11);
+  const moment = (B0 * 1e-9 * (A * 1e3) ** 3) / 1e-7 / 1e22;
+  const theta = Math.acos(-g10 / B0);
+  const phi = Math.atan2(-h11, -g11);
+  return { B0, moment, poleLat: 90 - (theta * 180) / Math.PI, poleLon: (phi * 180) / Math.PI };
 }
 
 /** Solo l'intensità totale, in nT. */

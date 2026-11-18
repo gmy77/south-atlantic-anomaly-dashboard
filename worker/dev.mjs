@@ -20,7 +20,7 @@ const port = Number(process.argv[2] ?? 8797);
 const empty = !(await env.DB.prepare("SELECT COUNT(*) AS n FROM goes").first())?.n;
 if (empty) console.log("primo avvio, lettura NOAA:", await update(env, "cron"));
 
-const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".json": "application/json", ".png": "image/png", ".css": "text/css" };
+const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".json": "application/json", ".png": "image/png", ".css": "text/css", ".svg": "image/svg+xml", ".webmanifest": "application/manifest+json" };
 
 createServer(async (req, res) => {
   const url = new URL(req.url, `http://127.0.0.1:${port}`);

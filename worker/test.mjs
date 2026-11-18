@@ -7,7 +7,7 @@
 
 import assert from "node:assert/strict";
 import { createD1 } from "./d1-shim.mjs";
-import worker, { goesBins, gScale, handle, parseTime, simpleSeries, sScale, toObjects, update } from "./src/index.js";
+import worker, { episodes, goesBins, gScale, handle, parseTime, simpleSeries, sScale, toObjects, update } from "./src/index.js";
 
 const offline = process.argv.includes("--offline");
 const ctx = { waitUntil: () => {} };
@@ -142,6 +142,36 @@ assert.equal(
 // percorso sconosciuto senza ASSETS
 assert.equal((await get("/nulla")).status, 404);
 console.log("3. HTTP, token e limiti: ok");
+
+// ---- 3b. statistiche ed episodi ----------------------------------------------
+assert.deepEqual(
+  episodes([[0, 5], [10800, 6], [30000, 5.3]], 10800).map((e) => [e.start, e.end, e.peak]),
+  [[0, 10800, 6], [30000, 30000, 5.3]],
+);
+res = await get("/api/stats");
+body = JSON.parse(res.body);
+assert.equal(body.archive.goes, 1);
+assert.equal(body.kp_histogram[5], 1);
+assert.equal(body.storms_g.length, 1);
+assert.equal(body.storms_g[0].G, 1);
+assert.equal(body.records.kp_max.v, 5.33);
+assert.equal(body.proton_events.length, 0);
+assert.ok(Array.isArray(body.daily_30d));
+
+// ISS con servizio finto
+const issFetch = async (url) => {
+  const ts = new URL(url).searchParams.get("timestamps").split(",").map(Number);
+  return Response.json(ts.map((t, i) => ({ timestamp: t, latitude: -20 + i, longitude: -50 + i, altitude: 420.12, velocity: 27600.4, visibility: "daylight" })));
+};
+const ri = await handle(new Request("https://x/api/iss"), env, ctx, now, issFetch);
+body = await ri.json();
+assert.equal(ri.status, 200);
+assert.equal(body.now.lat, -20);
+assert.equal(body.now.velocity_kmh, 27600);
+assert.equal(body.track.length, 20);
+const rbad = await handle(new Request("https://x/api/iss"), env, ctx, now, async () => new Response("no", { status: 503 }));
+assert.equal(rbad.status, 502);
+console.log("3b. statistiche e ISS: ok");
 
 // ---- 4. fonti vere -------------------------------------------------------------
 if (!offline) {

@@ -4,7 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>South Atlantic Anomaly Observatory</title>
-  <meta name="description" content="Anomalia del Sud Atlantico: campo geomagnetico IGRF-14 1900–2030 e storico NOAA SWPC (protoni, elettroni, Kp, Dst) accumulato su Cloudflare D1." />
+  <meta name="description" content="Anomalia del Sud Atlantico: campo geomagnetico IGRF-14 1900–2030, ISS in tempo reale e storico NOAA SWPC (protoni, elettroni, Kp, Dst) accumulato su Cloudflare D1." />
+  <meta name="theme-color" content="#060911" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -48,13 +53,13 @@
       display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;
     }
     .brand { display: flex; align-items: center; gap: 12px; }
+    .brand img { width: 40px; height: 40px; flex-shrink: 0; border-radius: 9px; box-shadow: 0 0 18px rgba(0, 229, 255, 0.18); }
     .radar-dot {
-      width: 12px; height: 12px; border-radius: 50%;
-      background: var(--emerald); box-shadow: 0 0 12px var(--emerald);
-      animation: pulse 2s infinite; flex-shrink: 0;
+      width: 10px; height: 10px; border-radius: 50%; display: inline-block; vertical-align: middle; margin-right: 6px;
+      background: var(--emerald); box-shadow: 0 0 10px var(--emerald); animation: pulse 2s infinite;
     }
-    .radar-dot.stale { background: var(--amber); box-shadow: 0 0 12px var(--amber); }
-    .radar-dot.down { background: var(--rose); box-shadow: 0 0 12px var(--rose); animation: none; }
+    .radar-dot.stale { background: var(--amber); box-shadow: 0 0 10px var(--amber); }
+    .radar-dot.down { background: var(--rose); box-shadow: 0 0 10px var(--rose); animation: none; }
     @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(1.25); } }
     h1 { font-size: 1.05rem; font-weight: 800; letter-spacing: 0.06em; color: #fff; }
     h1 span { color: var(--cyan); font-family: var(--font-mono); font-weight: 600; }
@@ -80,6 +85,21 @@
     button.primary:hover { background: var(--cyan); color: #050a14; }
     button.on { background: var(--cyan); color: #050a14; border-color: var(--cyan); }
     button:disabled { opacity: 0.5; cursor: wait; }
+    /* pulsante ? */
+    .help {
+      width: 20px; height: 20px; padding: 0; border-radius: 50%; flex-shrink: 0;
+      justify-content: center; font-size: 0.7rem; font-weight: 800; line-height: 1;
+      color: var(--text-muted); background: rgba(143, 164, 196, 0.08); border: 1px solid var(--border-bright);
+    }
+    .help:hover, .help[aria-expanded="true"] { color: #050a14; background: var(--cyan); border-color: var(--cyan); }
+    #helpPop {
+      position: fixed; z-index: 3000; max-width: min(380px, calc(100vw - 24px));
+      background: #0b1426; border: 1px solid var(--cyan); border-radius: 10px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6); padding: 12px 14px 12px; display: none;
+    }
+    #helpPop h4 { font-size: 0.86rem; color: var(--cyan); margin-bottom: 6px; padding-right: 22px; }
+    #helpPop p { font-size: 0.8rem; color: #cbd5e1; white-space: pre-line; }
+    #helpPop .x { position: absolute; top: 8px; right: 8px; width: 22px; height: 22px; padding: 0; justify-content: center; border-radius: 50%; }
     main { max-width: 1620px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
     .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 14px; }
     .kpi-card {
@@ -91,13 +111,16 @@
     .kpi-card.danger::before { background: linear-gradient(90deg, var(--rose), transparent); }
     .kpi-card.purple::before { background: linear-gradient(90deg, var(--purple), transparent); }
     .kpi-card.green::before { background: linear-gradient(90deg, var(--emerald), transparent); }
-    .kpi-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+    .kpi-card.iss-in { box-shadow: inset 0 0 0 1px rgba(244, 63, 94, 0.55), 0 0 24px rgba(244, 63, 94, 0.18); }
+    .kpi-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+    .kpi-top > span:first-child { flex: 1; }
+    .kpi-tagrow { margin-top: 6px; min-height: 20px; }
     .kpi-tag { padding: 2px 7px; border-radius: 4px; font-size: 0.66rem; font-weight: 700; background: rgba(0, 229, 255, 0.12); color: var(--cyan); white-space: nowrap; }
     .kpi-tag.warn { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
     .kpi-tag.danger { background: rgba(244, 63, 94, 0.16); color: #fda4af; }
     .kpi-tag.purple { background: rgba(168, 85, 247, 0.16); color: #d8b4fe; }
     .kpi-tag.green { background: rgba(16, 185, 129, 0.16); color: #6ee7b7; }
-    .kpi-value { font-family: var(--font-mono); font-size: 1.6rem; font-weight: 800; color: #fff; margin: 8px 0 4px; }
+    .kpi-value { font-family: var(--font-mono); font-size: 1.6rem; font-weight: 800; color: #fff; margin: 6px 0 4px; white-space: nowrap; }
     .kpi-value small { font-size: 0.82rem; font-weight: 500; color: var(--text-muted); }
     .kpi-sub { font-size: 0.78rem; color: var(--text-muted); }
     .kpi-sub strong { color: var(--text-main); }
@@ -106,13 +129,15 @@
     .panel-title { font-size: 0.96rem; font-weight: 700; letter-spacing: 0.03em; color: #fff; display: flex; align-items: center; gap: 8px; }
     .panel-title .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); flex-shrink: 0; }
     .panel-desc { font-size: 0.8rem; color: var(--text-muted); }
-    .map-wrapper { position: relative; width: 100%; height: 540px; background: #04070e; border: 1px solid var(--border-bright); border-radius: 10px; overflow: hidden; }
-    #realMap { width: 100%; height: 100%; background: #040812; }
+    .ctrl-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .map-wrapper { position: relative; width: 100%; height: 560px; background: #04070e; border: 1px solid var(--border-bright); border-radius: 10px; overflow: hidden; }
+    #realMap { width: 100%; height: 100%; background: #040812; cursor: crosshair; }
     .leaflet-container { background: #040812 !important; font-family: var(--font-mono) !important; }
     .leaflet-control-zoom a { background-color: #0c1322 !important; color: var(--cyan) !important; border-color: var(--border-bright) !important; }
     .leaflet-control-attribution { background: rgba(6, 9, 17, 0.8) !important; color: var(--text-muted) !important; font-size: 10px !important; }
     .leaflet-control-attribution a { color: var(--cyan) !important; }
     .saa-tip { background: rgba(6, 9, 17, 0.92) !important; border: 1px solid var(--cyan) !important; color: #fff !important; font-family: var(--font-mono) !important; font-size: 11px !important; border-radius: 6px !important; }
+    .iss-icon { font-size: 20px; line-height: 20px; text-align: center; filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.9)); }
     .map-hud {
       position: absolute; left: 12px; bottom: 12px; z-index: 500; pointer-events: none;
       background: rgba(6, 9, 17, 0.88); border: 1px solid var(--border-bright); border-radius: 8px;
@@ -120,20 +145,29 @@
     }
     .map-hud strong { color: #fff; }
     .colorbar { position: absolute; right: 12px; bottom: 26px; z-index: 500; pointer-events: none; background: rgba(6, 9, 17, 0.88); border: 1px solid var(--border-bright); border-radius: 8px; padding: 8px 10px; font-family: var(--font-mono); font-size: 0.66rem; color: var(--text-muted); }
-    .colorbar canvas { display: block; width: 180px; height: 10px; border-radius: 3px; margin: 4px 0 2px; }
-    .colorbar .ends { display: flex; justify-content: space-between; }
+    .colorbar canvas { display: block; width: 200px; height: 10px; border-radius: 3px; margin: 4px 0 2px; }
+    .colorbar .ends { display: flex; justify-content: space-between; gap: 10px; }
     .timeline-controls { margin-top: 14px; background: var(--bg-panel-alt); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
     .timeline-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
     input[type="range"] { flex: 1; min-width: 200px; accent-color: var(--cyan); cursor: pointer; }
     .year-readout { font-family: var(--font-mono); font-size: 1.15rem; font-weight: 800; color: var(--cyan); min-width: 56px; }
-    .seg { display: inline-flex; gap: 0; }
-    .seg button { border-radius: 0; }
-    .seg button:first-child { border-radius: 7px 0 0 7px; }
+    .seg { display: inline-flex; flex-wrap: wrap; gap: 0; }
+    .seg button { border-radius: 0; margin-left: -1px; }
+    .seg button:first-child { border-radius: 7px 0 0 7px; margin-left: 0; }
     .seg button:last-child { border-radius: 0 7px 7px 0; }
     .narr { font-size: 0.8rem; color: #cbd5e1; font-family: var(--font-mono); }
+    .point-grid { display: grid; grid-template-columns: minmax(260px, 340px) 1fr; gap: 18px; margin-top: 14px; }
+    .point-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-content: start; }
+    .pv { background: var(--bg-panel-alt); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
+    .pv .k { font-family: var(--font-mono); font-size: 0.66rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .pv .v { font-family: var(--font-mono); font-size: 1.02rem; font-weight: 700; color: #fff; }
+    .pv.wide { grid-column: 1 / -1; }
     .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap: 18px; }
-    .chart-box .canvas-wrap { position: relative; height: 290px; }
+    .chart-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+    .chart-head .panel-title { font-size: 0.86rem; }
+    .canvas-wrap { position: relative; height: 290px; }
     .note { font-size: 0.74rem; color: var(--text-muted); margin-top: 8px; font-family: var(--font-mono); }
+    .mini-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 18px; }
     .bio-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 14px; }
     .bio-card { background: var(--bg-panel-alt); border: 1px solid var(--border); border-left: 4px solid var(--emerald); border-radius: 10px; padding: 15px; }
     .bio-card.medium { border-left-color: var(--amber); }
@@ -156,6 +190,9 @@
     @keyframes slideIn { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     footer { text-align: center; padding: 18px; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid var(--border); font-family: var(--font-mono); }
     footer button { font-size: 0.7rem; padding: 3px 8px; }
+    @media (max-width: 860px) {
+      .point-grid { grid-template-columns: 1fr; }
+    }
     @media (max-width: 640px) {
       header { padding: 10px 16px; position: static; }
       main { padding: 16px; }
@@ -166,14 +203,19 @@
 </head>
 <body>
   <div class="toast-box" id="toastBox"></div>
+  <div id="helpPop" role="dialog" aria-modal="false" aria-labelledby="helpTitle">
+    <button class="x" id="helpClose" aria-label="Chiudi">✕</button>
+    <h4 id="helpTitle"></h4>
+    <p id="helpText"></p>
+  </div>
 
   <header>
     <div class="brand">
-      <div class="radar-dot" id="radarDot"></div>
+      <img src="/icon.svg" alt="" width="40" height="40" />
       <div>
         <h1>SOUTH ATLANTIC ANOMALY <span>// OBSERVATORY</span></h1>
         <div class="meta-bar">
-          <span>MODELLO: <strong>IGRF-14</strong></span>
+          <span><span class="radar-dot" id="radarDot"></span>MODELLO: <strong>IGRF-14</strong></span>
           <span>SPAZIO: <strong>NOAA SWPC → Cloudflare D1</strong></span>
           <span>ULTIMO AGGIORNAMENTO: <strong id="lastRun">--</strong></span>
         </div>
@@ -194,27 +236,38 @@
     <!-- KPI -->
     <section class="kpi-grid" aria-label="Indicatori principali">
       <div class="kpi-card danger">
-        <div class="kpi-top"><span>Minimo SAA al suolo (P1)</span><span class="kpi-tag danger" id="kTagP1">IGRF-14</span></div>
+        <div class="kpi-top"><span>Minimo SAA al suolo</span><button class="help" data-help="p1" aria-label="Spiegazione">?</button></div>
+        <div class="kpi-tagrow"><span class="kpi-tag danger" id="kTagP1">IGRF-14</span></div>
         <div class="kpi-value" id="kP1">-- <small>nT</small></div>
         <div class="kpi-sub" id="kP1sub">--</div>
       </div>
       <div class="kpi-card warn">
-        <div class="kpi-top"><span>Deriva del minimo</span><span class="kpi-tag warn" id="kTagDrift">--</span></div>
+        <div class="kpi-top"><span>Deriva del minimo</span><button class="help" data-help="drift" aria-label="Spiegazione">?</button></div>
+        <div class="kpi-tagrow"><span class="kpi-tag warn" id="kTagDrift">--</span></div>
         <div class="kpi-value" id="kDrift">-- <small>km/anno</small></div>
         <div class="kpi-sub" id="kDriftSub">--</div>
       </div>
       <div class="kpi-card purple">
-        <div class="kpi-top"><span>Lobo SW Africa (P2) · quota ISS</span><span class="kpi-tag purple" id="kTagP2">--</span></div>
+        <div class="kpi-top"><span>Lobo SW Africa</span><button class="help" data-help="p2" aria-label="Spiegazione">?</button></div>
+        <div class="kpi-tagrow"><span class="kpi-tag purple" id="kTagP2">--</span></div>
         <div class="kpi-value" id="kP2">-- <small>nT</small></div>
         <div class="kpi-sub" id="kP2sub">--</div>
       </div>
+      <div class="kpi-card" id="issCard">
+        <div class="kpi-top"><span>ISS ora</span><button class="help" data-help="iss" aria-label="Spiegazione">?</button></div>
+        <div class="kpi-tagrow"><span class="kpi-tag" id="kTagIss">--</span></div>
+        <div class="kpi-value" id="kIss">-- <small>nT</small></div>
+        <div class="kpi-sub" id="kIssSub">--</div>
+      </div>
       <div class="kpi-card">
-        <div class="kpi-top"><span>Protoni GOES ≥10 MeV</span><span class="kpi-tag" id="kTagS">S--</span></div>
+        <div class="kpi-top"><span>Protoni ≥10 MeV</span><button class="help" data-help="protons" aria-label="Spiegazione">?</button></div>
+        <div class="kpi-tagrow"><span class="kpi-tag" id="kTagS">S--</span></div>
         <div class="kpi-value" id="kP10">-- <small>pfu</small></div>
         <div class="kpi-sub" id="kP10sub">--</div>
       </div>
       <div class="kpi-card green">
-        <div class="kpi-top"><span>Geomagnetismo</span><span class="kpi-tag green" id="kTagG">G--</span></div>
+        <div class="kpi-top"><span>Geomagnetismo</span><button class="help" data-help="geo" aria-label="Spiegazione">?</button></div>
+        <div class="kpi-tagrow"><span class="kpi-tag green" id="kTagG">G--</span></div>
         <div class="kpi-value" id="kKp">Kp -- </div>
         <div class="kpi-sub" id="kKpSub">--</div>
       </div>
@@ -224,21 +277,32 @@
     <section class="panel" aria-label="Mappa del campo geomagnetico">
       <div class="panel-header">
         <div>
-          <div class="panel-title"><span class="dot"></span> Intensità del campo geomagnetico F — IGRF-14 calcolato nel browser</div>
-          <div class="panel-desc">Colori e isolinee da 195 coefficienti ufficiali (grado 13). Passa il cursore sulla mappa per leggere F in quel punto; clicca un punto della traiettoria per saltare a quell'anno.</div>
+          <div class="panel-title"><span class="dot"></span> Mappa del campo geomagnetico — IGRF-14 calcolato nel browser <button class="help" data-help="map" aria-label="Spiegazione">?</button></div>
+          <div class="panel-desc">Scegli grandezza, quota e anno. Clicca un punto per tutti i valori e la sua storia dal 1900.</div>
         </div>
-        <div class="seg" role="group" aria-label="Quota">
-          <button id="altGround" class="on">Suolo</button>
-          <button id="altIss">400 km (ISS)</button>
+        <div class="ctrl-row">
+          <div class="seg" role="group" aria-label="Grandezza" id="qtySeg">
+            <button data-q="F" class="on">F</button>
+            <button data-q="SV">dF/dt</button>
+            <button data-q="H">H</button>
+            <button data-q="Z">Z</button>
+            <button data-q="I">Inclinazione</button>
+            <button data-q="D">Declinazione</button>
+          </div>
+          <div class="seg" role="group" aria-label="Quota">
+            <button id="altGround" class="on">Suolo</button>
+            <button id="altIss">400 km</button>
+          </div>
+          <button id="issToggle" class="on" aria-pressed="true">ISS</button>
         </div>
       </div>
       <div class="map-wrapper">
         <div id="realMap"></div>
         <div class="map-hud" id="mapHud">--</div>
         <div class="colorbar" aria-hidden="true">
-          <div>F (nT)</div>
-          <canvas id="colorbar" width="180" height="10"></canvas>
-          <div class="ends"><span id="cbMin">--</span><span id="cbMax">--</span></div>
+          <div id="cbTitle">F (nT)</div>
+          <canvas id="colorbar" width="200" height="10"></canvas>
+          <div class="ends"><span id="cbMin">--</span><span id="cbMid"></span><span id="cbMax">--</span></div>
         </div>
       </div>
       <div class="timeline-controls">
@@ -251,14 +315,25 @@
         </div>
         <div class="narr" id="epochNarrative"></div>
       </div>
+
+      <div class="point-grid">
+        <div>
+          <div class="chart-head"><div class="panel-title"><span class="dot" style="background:var(--amber)"></span> <span id="ptTitle">Punto selezionato</span></div><button class="help" data-help="point" aria-label="Spiegazione">?</button></div>
+          <div class="point-vals" id="pointVals"></div>
+        </div>
+        <div>
+          <div class="chart-head"><div class="panel-title"><span class="dot" style="background:var(--amber)"></span> Intensità F nel punto, 1900–2030</div></div>
+          <div class="canvas-wrap" style="height:260px"><canvas id="chPoint"></canvas></div>
+        </div>
+      </div>
     </section>
 
-    <!-- GRAFICI STORICO LIVE -->
+    <!-- STORICO LIVE -->
     <section class="panel" aria-label="Storico NOAA SWPC">
       <div class="panel-header">
         <div>
-          <div class="panel-title"><span class="dot" style="background:var(--emerald)"></span> Meteo spaziale — storico accumulato su Cloudflare D1</div>
-          <div class="panel-desc">Il Worker legge NOAA SWPC due volte al giorno e conserva tutto: lo storico cresce oltre i 3 giorni dei feed originali.</div>
+          <div class="panel-title"><span class="dot" style="background:var(--emerald)"></span> Meteo spaziale — storico accumulato su Cloudflare D1 <button class="help" data-help="history" aria-label="Spiegazione">?</button></div>
+          <div class="panel-desc">Il Worker legge NOAA due volte al giorno e conserva tutto: lo storico cresce oltre i 3 giorni dei feed originali.</div>
         </div>
         <div class="seg" role="group" aria-label="Intervallo" id="rangeSeg">
           <button data-days="3" class="on">3 g</button>
@@ -270,22 +345,19 @@
       </div>
       <div class="charts-grid">
         <div class="chart-box">
-          <div class="panel-title" style="font-size:0.86rem"><span class="dot" style="background:var(--rose)"></span> Protoni integrali GOES (pfu, scala log)</div>
+          <div class="chart-head"><div class="panel-title"><span class="dot" style="background:var(--rose)"></span> Protoni integrali GOES (pfu, log)</div><button class="help" data-help="chProtons" aria-label="Spiegazione">?</button></div>
           <div class="canvas-wrap"><canvas id="chProtons"></canvas></div>
-          <div class="note">Linea tratteggiata: soglia S1 (10 pfu a ≥10 MeV). GOES è in orbita geostazionaria: misura le particelle solari, non la SAA direttamente.</div>
         </div>
         <div class="chart-box">
-          <div class="panel-title" style="font-size:0.86rem"><span class="dot" style="background:var(--emerald)"></span> Kp (barre) e Dst (linea, nT)</div>
+          <div class="chart-head"><div class="panel-title"><span class="dot" style="background:var(--emerald)"></span> Kp (barre) e Dst (linea, nT)</div><button class="help" data-help="chGeo" aria-label="Spiegazione">?</button></div>
           <div class="canvas-wrap"><canvas id="chGeo"></canvas></div>
-          <div class="note">Kp ≥ 5 = tempesta G1+. Dst molto negativo = corrente ad anello intensa (tempesta).</div>
         </div>
         <div class="chart-box">
-          <div class="panel-title" style="font-size:0.86rem"><span class="dot" style="background:var(--purple)"></span> Elettroni ≥2 MeV (pfu, log) e campo GOES Hp (nT)</div>
+          <div class="chart-head"><div class="panel-title"><span class="dot" style="background:var(--purple)"></span> Elettroni ≥2 MeV (log) e campo GOES Hp</div><button class="help" data-help="chElectrons" aria-label="Spiegazione">?</button></div>
           <div class="canvas-wrap"><canvas id="chElectrons"></canvas></div>
-          <div class="note">Gli elettroni relativistici della fascia esterna salgono dopo i flussi veloci di vento solare.</div>
         </div>
         <div class="chart-box">
-          <div class="panel-title" style="font-size:0.86rem"><span class="dot" style="background:var(--cyan)"></span> Registro aggiornamenti</div>
+          <div class="chart-head"><div class="panel-title"><span class="dot" style="background:var(--cyan)"></span> Registro aggiornamenti</div><button class="help" data-help="runs" aria-label="Spiegazione">?</button></div>
           <div class="table-wrap" style="max-height:290px;overflow-y:auto">
             <table><thead><tr><th>Ora (UTC)</th><th>Origine</th><th>Righe</th><th>Esito</th></tr></thead><tbody id="runsBody"></tbody></table>
           </div>
@@ -293,28 +365,74 @@
       </div>
     </section>
 
-    <!-- GRAFICI MODELLO -->
-    <section class="charts-grid" aria-label="Evoluzione secolare">
-      <div class="panel chart-box">
-        <div class="panel-header"><div>
-          <div class="panel-title"><span class="dot" style="background:var(--rose)"></span> Indebolimento del minimo 1900–2030</div>
-          <div class="panel-desc">F minimo al suolo (P1, P2) e a 400 km di quota, nT</div>
-        </div></div>
-        <div class="canvas-wrap"><canvas id="chModelF"></canvas></div>
+    <!-- STATISTICHE ARCHIVIO -->
+    <section class="panel" aria-label="Statistiche dell'archivio">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title"><span class="dot" style="background:var(--amber)"></span> Statistiche dell'archivio <button class="help" data-help="stats" aria-label="Spiegazione">?</button></div>
+          <div class="panel-desc" id="statsDesc">--</div>
+        </div>
       </div>
-      <div class="panel chart-box">
-        <div class="panel-header"><div>
-          <div class="panel-title"><span class="dot" style="background:var(--amber)"></span> Estensione e deriva</div>
-          <div class="panel-desc">Superficie con F &lt; 24.000 e &lt; 23.000 nT (milioni di km²) e velocità di deriva del minimo P1. Il picco e il crollo 1945–1960 vengono dai coefficienti DGRF di quegli anni, i meno affidabili della serie.</div>
-        </div></div>
-        <div class="canvas-wrap"><canvas id="chModelArea"></canvas></div>
+      <div class="mini-kpis" id="records"></div>
+      <div class="charts-grid">
+        <div class="chart-box">
+          <div class="chart-head"><div class="panel-title"><span class="dot" style="background:var(--emerald)"></span> Ultimi 30 giorni, valore per giorno</div><button class="help" data-help="daily" aria-label="Spiegazione">?</button></div>
+          <div class="canvas-wrap"><canvas id="chDaily"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-head"><div class="panel-title"><span class="dot" style="background:var(--amber)"></span> Distribuzione del Kp</div><button class="help" data-help="kphist" aria-label="Spiegazione">?</button></div>
+          <div class="canvas-wrap"><canvas id="chKpHist"></canvas></div>
+        </div>
+      </div>
+      <div class="chart-head" style="margin-top:18px"><div class="panel-title"><span class="dot" style="background:var(--rose)"></span> Episodi registrati</div><button class="help" data-help="events" aria-label="Spiegazione">?</button></div>
+      <div class="table-wrap" style="max-height:300px;overflow-y:auto">
+        <table><thead><tr><th>Tipo</th><th>Inizio (UTC)</th><th>Durata</th><th>Picco</th><th>Ora del picco</th></tr></thead><tbody id="eventsBody"></tbody></table>
       </div>
     </section>
 
-    <!-- EFFETTI BIOLOGICI -->
+    <!-- MODELLO -->
+    <section class="charts-grid" aria-label="Evoluzione secolare">
+      <div class="panel chart-box">
+        <div class="chart-head"><div>
+          <div class="panel-title"><span class="dot" style="background:var(--rose)"></span> Indebolimento del minimo 1900–2030</div>
+          <div class="panel-desc">F minimo al suolo (P1, P2) e a 400 km, nT</div>
+        </div><button class="help" data-help="modelF" aria-label="Spiegazione">?</button></div>
+        <div class="canvas-wrap"><canvas id="chModelF"></canvas></div>
+      </div>
+      <div class="panel chart-box">
+        <div class="chart-head"><div>
+          <div class="panel-title"><span class="dot" style="background:var(--amber)"></span> Estensione e deriva</div>
+          <div class="panel-desc">Area con F &lt; 24.000 / 23.000 nT (milioni di km²) e velocità del minimo P1</div>
+        </div><button class="help" data-help="modelArea" aria-label="Spiegazione">?</button></div>
+        <div class="canvas-wrap"><canvas id="chModelArea"></canvas></div>
+      </div>
+      <div class="panel chart-box">
+        <div class="chart-head"><div>
+          <div class="panel-title"><span class="dot" style="background:var(--cyan)"></span> Il dipolo terrestre</div>
+          <div class="panel-desc">Momento magnetico (10²² A·m²) e latitudine del polo geomagnetico Nord</div>
+        </div><button class="help" data-help="dipole" aria-label="Spiegazione">?</button></div>
+        <div class="canvas-wrap"><canvas id="chDipole"></canvas></div>
+      </div>
+      <div class="panel chart-box">
+        <div class="chart-head"><div>
+          <div class="panel-title"><span class="dot" style="background:var(--purple)"></span> Velocità di indebolimento</div>
+          <div class="panel-desc">Variazione annua del minimo, nT/anno (P1 Sud America, P2 SW Africa)</div>
+        </div><button class="help" data-help="rates" aria-label="Spiegazione">?</button></div>
+        <div class="canvas-wrap"><canvas id="chRates"></canvas></div>
+      </div>
+      <div class="panel chart-box" style="grid-column: 1 / -1">
+        <div class="chart-head"><div>
+          <div class="panel-title"><span class="dot" style="background:var(--emerald)"></span> Spostamento del minimo P1</div>
+          <div class="panel-desc">Longitudine e latitudine anno per anno (gradi, negativi = Ovest / Sud)</div>
+        </div><button class="help" data-help="track" aria-label="Spiegazione">?</button></div>
+        <div class="canvas-wrap"><canvas id="chTrack"></canvas></div>
+      </div>
+    </section>
+
+    <!-- EFFETTI -->
     <section class="panel" aria-label="Effetti per quota">
       <div class="panel-header"><div>
-        <div class="panel-title"><span class="dot" style="background:var(--rose)"></span> Effetti per fascia di quota</div>
+        <div class="panel-title"><span class="dot" style="background:var(--rose)"></span> Effetti per fascia di quota <button class="help" data-help="effects" aria-label="Spiegazione">?</button></div>
         <div class="panel-desc">Ordini di grandezza indicativi dalla letteratura; la dose reale dipende da attività solare, schermatura e rotta.</div>
       </div></div>
       <div class="bio-grid">
@@ -338,11 +456,11 @@
       </div>
     </section>
 
-    <!-- TABELLA MODELLO -->
+    <!-- TABELLA -->
     <section class="panel" aria-label="Serie storica del modello">
       <div class="panel-header"><div>
-        <div class="panel-title"><span class="dot"></span> Serie IGRF-14 ogni 5 anni</div>
-        <div class="panel-desc">Calcolata dai coefficienti ufficiali (tools/igrf-saa.mjs). Dopo il 2025: estrapolazione con la variazione secolare, in corsivo.</div>
+        <div class="panel-title"><span class="dot"></span> Serie IGRF-14 ogni 5 anni <button class="help" data-help="table" aria-label="Spiegazione">?</button></div>
+        <div class="panel-desc">Calcolata dai coefficienti ufficiali. Dopo il 2025: estrapolazione con la variazione secolare, in corsivo.</div>
       </div></div>
       <div class="table-wrap">
         <table>
@@ -352,539 +470,13 @@
       </div>
     </section>
 
-    <!-- API -->
-    <section class="panel" aria-label="API">
-      <div class="panel-header"><div>
-        <div class="panel-title"><span class="dot" style="background:var(--blue)"></span> API pubbliche (JSON, CSV con ?format=csv)</div>
-      </div></div>
-      <div class="api-list">
-        <div><code>GET /api/latest</code> — ultimi valori GOES, Kp, Dst, scale NOAA S/G</div>
-        <div><code>GET /api/history?series=goes|kp|dst&amp;days=7[&amp;step=3600][&amp;format=csv]</code> — storico, aggregato automaticamente</div>
-        <div><code>GET /api/model[?format=csv]</code> — serie SAA 1900–2030 da IGRF-14</div>
-        <div><code>GET /api/runs</code> · <code>GET /api/health</code></div>
-      </div>
-    </section>
   </main>
 
   <footer>
-    SOUTH ATLANTIC ANOMALY OBSERVATORY • Campo: IGRF-14 (IAGA V-MOD) • Dati spaziali: NOAA SWPC (GOES, Kp), WDC Kyoto (Dst) • Archivio: Cloudflare Workers + D1
+    SOUTH ATLANTIC ANOMALY OBSERVATORY • Campo: IGRF-14 (IAGA V-MOD) • Dati spaziali: NOAA SWPC (GOES, Kp), WDC Kyoto (Dst) • ISS: wheretheiss.at • Archivio: Cloudflare Workers + D1
     • <button id="keyBtn" title="Solo per il proprietario: chiave per gli aggiornamenti manuali">chiave</button>
   </footer>
 
-  <script type="module">
-    import { field, coefficientsFor, YEAR_MIN, YEAR_MAX } from "./igrf.js";
-
-    // ---------------------------------------------------------------------
-    // Stato e utilità
-    // ---------------------------------------------------------------------
-    const API = new URLSearchParams(location.search).get("api") || "";
-    const NOW_YEAR = new Date().getUTCFullYear() + new Date().getUTCMonth() / 12;
-    const KEY_STORE = "saa-update-token";
-    const state = { year: Math.min(Math.floor(NOW_YEAR), YEAR_MAX), alt: 0, days: 3, playing: null, model: null };
-    const fmt = (x, d = 0) => (x === null || x === undefined || !Number.isFinite(x)) ? "--" : x.toLocaleString("it-IT", { minimumFractionDigits: d, maximumFractionDigits: d });
-    const fmtSci = (x) => (x === null || x === undefined) ? "--" : x >= 100 ? fmt(x, 0) : x.toLocaleString("it-IT", { maximumSignificantDigits: 3 });
-    const $ = (id) => document.getElementById(id);
-    const isoShort = (t) => new Date(t * 1000).toISOString().slice(0, 16).replace("T", " ");
-    const store = {
-      get() { try { return localStorage.getItem(KEY_STORE); } catch { return null; } },
-      set(v) { try { v ? localStorage.setItem(KEY_STORE, v) : localStorage.removeItem(KEY_STORE); } catch {} },
-    };
-
-    function toast(msg, err = false) {
-      const el = document.createElement("div");
-      el.className = "toast" + (err ? " err" : "");
-      el.textContent = msg;
-      $("toastBox").appendChild(el);
-      setTimeout(() => el.remove(), 4500);
-    }
-
-    async function getJSON(path) {
-      const r = await fetch(API + path, { cache: "no-store" });
-      if (!r.ok) throw new Error(`${path}: HTTP ${r.status}`);
-      return r.json();
-    }
-
-    const compass = (az) => ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSO", "SO", "OSO", "O", "ONO", "NO", "NNO"][Math.round(az / 22.5) % 16];
-    const latS = (v) => `${fmt(Math.abs(v), 2)}°${v < 0 ? "S" : "N"}`;
-    const lonS = (v) => `${fmt(Math.abs(v), 2)}°${v < 0 ? "O" : "E"}`;
-
-    // ---------------------------------------------------------------------
-    // Mappa IGRF
-    // ---------------------------------------------------------------------
-    const BOX = { s: -75, n: 25, w: -130, e: 70 };
-    let map, fieldLayer, contourLayer, markLayer, worldLayer;
-
-    // palette: rosso (minimo) → ambra → blu tenue → trasparente
-    const STOPS = [
-      [0.00, [244, 63, 94, 0.78]],
-      [0.18, [251, 113, 133, 0.62]],
-      [0.38, [245, 158, 11, 0.50]],
-      [0.60, [56, 189, 248, 0.28]],
-      [0.85, [59, 130, 246, 0.10]],
-      [1.00, [59, 130, 246, 0.0]],
-    ];
-    function colorAt(u) {
-      u = Math.min(1, Math.max(0, u));
-      for (let i = 1; i < STOPS.length; i++) {
-        if (u <= STOPS[i][0]) {
-          const [u0, c0] = STOPS[i - 1], [u1, c1] = STOPS[i];
-          const t = (u - u0) / (u1 - u0);
-          return c0.map((v, k) => v + (c1[k] - v) * t);
-        }
-      }
-      return STOPS.at(-1)[1];
-    }
-    const RANGE = { 0: [21500, 32000], 400: [18500, 27000] };
-    const LEVELS = { 0: [22500, 23000, 24000, 26000, 28000, 30000], 400: [19000, 20000, 21000, 22000, 24000] };
-
-    function drawColorbar() {
-      const c = $("colorbar"), ctx = c.getContext("2d");
-      for (let x = 0; x < c.width; x++) {
-        const [r, g, b, a] = colorAt(x / (c.width - 1));
-        ctx.fillStyle = `rgba(${r},${g},${b},${Math.max(a, 0.15)})`;
-        ctx.fillRect(x, 0, 1, c.height);
-      }
-      $("cbMin").textContent = fmt(RANGE[state.alt][0]);
-      $("cbMax").textContent = "≥ " + fmt(RANGE[state.alt][1]);
-    }
-
-    const mercY = (lat) => Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360));
-    const invMercY = (y) => (2 * Math.atan(Math.exp(y)) - Math.PI / 2) * 180 / Math.PI;
-
-    /** Immagine del campo in proiezione Mercator + griglia regolare per le isolinee. */
-    function computeField(year, alt, fast) {
-      const coeffs = coefficientsFor(year);
-      const W = fast ? 200 : 400, H = fast ? 120 : 240;
-      const c = document.createElement("canvas");
-      c.width = W; c.height = H;
-      const ctx = c.getContext("2d");
-      const img = ctx.createImageData(W, H);
-      const yN = mercY(BOX.n), yS = mercY(BOX.s);
-      const [fmin, fmax] = RANGE[alt];
-      for (let j = 0; j < H; j++) {
-        const lat = invMercY(yN - ((j + 0.5) / H) * (yN - yS));
-        for (let i = 0; i < W; i++) {
-          const lon = BOX.w + ((i + 0.5) / W) * (BOX.e - BOX.w);
-          const F = field(lat, lon, alt, year, coeffs).F;
-          const [r, g, b, a] = colorAt((F - fmin) / (fmax - fmin));
-          const k = (j * W + i) * 4;
-          img.data[k] = r; img.data[k + 1] = g; img.data[k + 2] = b; img.data[k + 3] = a * 255;
-        }
-      }
-      ctx.putImageData(img, 0, 0);
-      // griglia lat/lon per le isolinee
-      const step = fast ? 2 : 1;
-      const lats = [], lons = [];
-      for (let la = BOX.s; la <= BOX.n; la += step) lats.push(la);
-      for (let lo = BOX.w; lo <= BOX.e; lo += step) lons.push(lo);
-      const grid = lats.map((la) => lons.map((lo) => field(la, lo, alt, year, coeffs).F));
-      return { url: c.toDataURL(), lats, lons, grid };
-    }
-
-    /** Marching squares: segmenti dell'isolinea `lv` sulla griglia. */
-    function contour(lats, lons, grid, lv) {
-      const segs = [];
-      const interp = (a, b, fa, fb) => a + (b - a) * ((lv - fa) / (fb - fa));
-      for (let j = 0; j < lats.length - 1; j++) {
-        for (let i = 0; i < lons.length - 1; i++) {
-          const f00 = grid[j][i], f10 = grid[j][i + 1], f01 = grid[j + 1][i], f11 = grid[j + 1][i + 1];
-          const pts = [];
-          if ((f00 < lv) !== (f10 < lv)) pts.push([lats[j], interp(lons[i], lons[i + 1], f00, f10)]);
-          if ((f10 < lv) !== (f11 < lv)) pts.push([interp(lats[j], lats[j + 1], f10, f11), lons[i + 1]]);
-          if ((f01 < lv) !== (f11 < lv)) pts.push([lats[j + 1], interp(lons[i], lons[i + 1], f01, f11)]);
-          if ((f00 < lv) !== (f01 < lv)) pts.push([interp(lats[j], lats[j + 1], f00, f01), lons[i]]);
-          if (pts.length === 2) segs.push(pts);
-          else if (pts.length === 4) { segs.push([pts[0], pts[1]]); segs.push([pts[2], pts[3]]); }
-        }
-      }
-      return segs;
-    }
-
-    function initMap() {
-      map = L.map("realMap", { center: [-25, -30], zoom: 3, minZoom: 2, maxZoom: 7, worldCopyJump: false, maxBounds: [[-85, -200], [85, 200]], preferCanvas: true });
-      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
-        attribution: "Esri, HERE, Garmin | IGRF-14 IAGA", maxZoom: 16, noWrap: true,
-      }).addTo(map);
-      fetch("https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json")
-        .then((r) => (r.ok ? r.json() : Promise.reject()))
-        .then((w) => {
-          worldLayer = L.geoJSON(topojson.feature(w, w.objects.countries), { style: { color: "#3a5a8c", weight: 0.7, fill: false }, interactive: false }).addTo(map);
-        })
-        .catch(() => {});
-      fieldLayer = L.imageOverlay("data:,", [[BOX.s, BOX.w], [BOX.n, BOX.e]], { opacity: 1, interactive: false }).addTo(map);
-      contourLayer = L.layerGroup().addTo(map);
-      markLayer = L.layerGroup().addTo(map);
-      map.on("mousemove", (e) => {
-        const { lat, lng } = e.latlng;
-        if (Math.abs(lat) > 89) return;
-        const F = field(lat, ((lng + 540) % 360) - 180, state.alt, state.year).F;
-        $("mapHud").innerHTML = hudBase() + ` • cursore ${latS(lat)} ${lonS(lng)}: <strong>${fmt(F)} nT</strong>`;
-      });
-      map.on("mouseout", () => ($("mapHud").innerHTML = hudBase()));
-    }
-
-    function modelRow(year) {
-      const rows = state.model?.rows;
-      if (!rows) return null;
-      return rows.find((r) => r.year === Math.round(year)) ?? null;
-    }
-
-    function hudBase() {
-      const r = modelRow(state.year);
-      const where = state.alt ? "400 km" : "suolo";
-      if (!r) return `ANNO <strong>${state.year}</strong> • ${where}`;
-      const p = state.alt ? { lat: r.iss_lat, lon: r.iss_lon, nt: r.iss_nt } : { lat: r.p1_lat, lon: r.p1_lon, nt: r.p1_nt };
-      return `ANNO <strong>${state.year}</strong> • ${where} • minimo <strong style="color:#fda4af">${fmt(p.nt)} nT</strong> a ${latS(p.lat)} ${lonS(p.lon)}`;
-    }
-
-    let drawToken = 0;
-    function drawMap(fast = false) {
-      if (!map) return;
-      const my = ++drawToken;
-      requestAnimationFrame(() => {
-        if (my !== drawToken) return;
-        const { url, lats, lons, grid } = computeField(state.year, state.alt, fast);
-        fieldLayer.setUrl(url);
-        contourLayer.clearLayers();
-        for (const lv of LEVELS[state.alt]) {
-          const segs = contour(lats, lons, grid, lv);
-          if (!segs.length) continue;
-          const strong = lv === (state.alt ? 21000 : 24000) || lv === (state.alt ? 20000 : 23000);
-          L.polyline(segs, { color: strong ? "#fde68a" : "#94a3b8", weight: strong ? 1.6 : 0.8, opacity: strong ? 0.95 : 0.55, interactive: false }).addTo(contourLayer);
-        }
-        drawMarks();
-        $("mapHud").innerHTML = hudBase();
-      });
-    }
-
-    function drawMarks() {
-      markLayer.clearLayers();
-      const rows = state.model?.rows;
-      if (!rows) return;
-      const iss = state.alt === 400;
-      const pts = rows.map((r) => [iss ? r.iss_lat : r.p1_lat, iss ? r.iss_lon : r.p1_lon]);
-      L.polyline(pts, { color: "#00e5ff", weight: 2, opacity: 0.85 }).addTo(markLayer);
-      rows.filter((r) => r.year % 10 === 0 || r.year === YEAR_MAX).forEach((r) => {
-        L.circleMarker([iss ? r.iss_lat : r.p1_lat, iss ? r.iss_lon : r.p1_lon], { radius: 3, color: "#00e5ff", weight: 1.5, fillColor: "#060911", fillOpacity: 1 })
-          .bindTooltip(`<b>${r.year}</b>: ${fmt(iss ? r.iss_nt : r.p1_nt)} nT`, { className: "saa-tip" })
-          .on("click", () => setYear(r.year))
-          .addTo(markLayer);
-      });
-      const r = modelRow(state.year);
-      if (!r) return;
-      const lat = iss ? r.iss_lat : r.p1_lat, lon = iss ? r.iss_lon : r.p1_lon;
-      L.circleMarker([lat, lon], { radius: 7, color: "#f43f5e", weight: 3, fillColor: "#fff", fillOpacity: 1 })
-        .bindTooltip(`<b>Minimo P1 ${r.year}</b><br>${fmt(iss ? r.iss_nt : r.p1_nt)} nT<br>${latS(lat)} ${lonS(lon)}`, { className: "saa-tip" })
-        .addTo(markLayer);
-      // vettore di deriva: 10 anni di spostamento, esagerato x5 per leggibilità
-      const km = r.drift_km_yr * 10 * 5, az = (r.drift_az_deg * Math.PI) / 180;
-      const dLat = (km * Math.cos(az)) / 111.2, dLon = (km * Math.sin(az)) / (111.2 * Math.cos((lat * Math.PI) / 180));
-      L.polyline([[lat, lon], [lat + dLat, lon + dLon]], { color: "#10b981", weight: 3 })
-        .bindTooltip(`Deriva ${fmt(r.drift_km_yr, 1)} km/anno verso ${compass(r.drift_az_deg)} (${r.drift_az_deg}°) — freccia = 50 anni`, { className: "saa-tip", sticky: true })
-        .addTo(markLayer);
-      if (!iss && r.p2_active) {
-        L.circleMarker([r.p2_lat, r.p2_lon], { radius: 6, color: "#f43f5e", weight: 2, fillColor: "#a855f7", fillOpacity: 1 })
-          .bindTooltip(`<b>Lobo P2 (SW Africa) ${r.year}</b><br>${fmt(r.p2_nt)} nT<br>${latS(r.p2_lat)} ${lonS(r.p2_lon)}`, { className: "saa-tip" })
-          .addTo(markLayer);
-      }
-    }
-
-    function setYear(y, fast = false) {
-      state.year = Math.min(YEAR_MAX, Math.max(YEAR_MIN, Math.round(Number(y))));
-      $("yearSlider").value = state.year;
-      $("yearDisplay").textContent = state.year;
-      drawMap(fast);
-      narrate();
-    }
-
-    function narrate() {
-      const r = modelRow(state.year);
-      if (!r) return;
-      const proj = r.source === "IGRF+SV" ? " <span style='color:#fbbf24'>(estrapolazione con variazione secolare)</span>" : "";
-      const p2 = r.p2_active ? `P2 SW Africa ${fmt(r.p2_nt)} nT a ${latS(r.p2_lat)} ${lonS(r.p2_lon)}` : "P2 non ancora formato (nessun minimo locale separato)";
-      $("epochNarrative").innerHTML =
-        `<strong style="color:#00e5ff">[${r.year}]</strong>${proj} P1 ${fmt(r.p1_nt)} nT a ${latS(r.p1_lat)} ${lonS(r.p1_lon)} • ${p2} • ` +
-        `deriva ${fmt(r.drift_km_yr, 1)} km/anno verso ${compass(r.drift_az_deg)} • area &lt;24k nT ${fmt(r.area_24k_mkm2, 1)} M km²`;
-    }
-
-    function togglePlay() {
-      if (state.playing) {
-        clearInterval(state.playing);
-        state.playing = null;
-        $("playBtn").textContent = "▶ Play";
-        drawMap(false);
-        return;
-      }
-      $("playBtn").textContent = "⏸ Pausa";
-      state.playing = setInterval(() => setYear(state.year >= YEAR_MAX ? YEAR_MIN : state.year + 1, true), 220);
-    }
-
-    // ---------------------------------------------------------------------
-    // Grafici (Chart.js)
-    // ---------------------------------------------------------------------
-    Chart.defaults.color = "#8fa4c4";
-    Chart.defaults.borderColor = "#1a2844";
-    Chart.defaults.font.family = "Consolas, monospace";
-    Chart.defaults.font.size = 11;
-    const charts = {};
-    const timeTick = (days) => (v) => {
-      const d = new Date(v * 1000);
-      return days <= 7 ? `${String(d.getUTCDate()).padStart(2, "0")}/${String(d.getUTCMonth() + 1).padStart(2, "0")} ${String(d.getUTCHours()).padStart(2, "0")}h`
-        : `${String(d.getUTCDate()).padStart(2, "0")}/${String(d.getUTCMonth() + 1).padStart(2, "0")}/${String(d.getUTCFullYear()).slice(2)}`;
-    };
-    const tipTitle = (items) => items.length ? isoShort(items[0].parsed.x) + " UTC" : "";
-
-    function lineDS(label, rows, idx, color, extra = {}) {
-      return {
-        label, borderColor: color, backgroundColor: color, borderWidth: 1.6, pointRadius: 0, tension: 0.15, spanGaps: false,
-        data: rows.map((r) => ({ x: r[0], y: r[idx] === null ? null : r[idx] })), ...extra,
-      };
-    }
-
-    function makeChart(id, config) {
-      charts[id]?.destroy();
-      charts[id] = new Chart($(id), config);
-    }
-
-    function baseOpts(days, extraScales = {}) {
-      return {
-        responsive: true, maintainAspectRatio: false, animation: false, parsing: false, normalized: true,
-        interaction: { mode: "index", intersect: false },
-        plugins: { legend: { labels: { boxWidth: 12 } }, tooltip: { callbacks: { title: tipTitle } } },
-        scales: { x: { type: "linear", ticks: { callback: timeTick(days), maxTicksLimit: 7, maxRotation: 0 } }, ...extraScales },
-      };
-    }
-
-    async function loadHistory() {
-      const d = state.days;
-      try {
-        const [g, k, ds] = await Promise.all([
-          getJSON(`/api/history?series=goes&days=${d}`),
-          getJSON(`/api/history?series=kp&days=${d}`),
-          getJSON(`/api/history?series=dst&days=${d}`),
-        ]);
-        const pos = (v) => (v !== null && v > 0 ? v : null);
-        const gr = g.rows.map((r) => [r[0], pos(r[1]), pos(r[2]), pos(r[3]), pos(r[4]), r[5]]);
-        const xMin = Math.floor(Date.now() / 1000) - d * 86400;
-        const s1 = { label: "S1", data: [{ x: gr[0]?.[0] ?? xMin, y: 10 }, { x: gr.at(-1)?.[0] ?? xMin, y: 10 }], borderColor: "#f43f5e", borderDash: [5, 4], borderWidth: 1, pointRadius: 0 };
-        makeChart("chProtons", {
-          type: "line",
-          data: { datasets: [lineDS("≥10 MeV", gr, 1, "#00e5ff"), lineDS("≥50 MeV", gr, 2, "#f59e0b"), lineDS("≥100 MeV", gr, 3, "#f43f5e"), s1] },
-          options: baseOpts(d, { y: { type: "logarithmic", title: { display: true, text: "pfu" } } }),
-        });
-        const kpColor = (v) => (v >= 7 ? "#f43f5e" : v >= 5 ? "#f59e0b" : v >= 4 ? "#eab308" : "#10b981");
-        makeChart("chGeo", {
-          data: {
-            datasets: [
-              { type: "bar", label: "Kp", data: k.rows.map((r) => ({ x: r[0] + k.step / 2, y: r[1] })), backgroundColor: k.rows.map((r) => kpColor(r[1])), yAxisID: "y", barPercentage: 1, categoryPercentage: 1 },
-              { type: "line", label: "Dst (nT)", data: ds.rows.map((r) => ({ x: r[0], y: r[1] })), borderColor: "#a855f7", backgroundColor: "#a855f7", borderWidth: 1.6, pointRadius: 0, yAxisID: "y2" },
-            ],
-          },
-          options: baseOpts(d, {
-            y: { min: 0, max: 9, title: { display: true, text: "Kp" } },
-            y2: { position: "right", grid: { drawOnChartArea: false }, title: { display: true, text: "Dst nT" } },
-          }),
-        });
-        makeChart("chElectrons", {
-          type: "line",
-          data: { datasets: [lineDS("e⁻ ≥2 MeV (pfu)", gr, 4, "#a855f7", { yAxisID: "y" }), lineDS("Hp (nT)", gr, 5, "#10b981", { yAxisID: "y2" })] },
-          options: baseOpts(d, {
-            y: { type: "logarithmic", title: { display: true, text: "pfu" } },
-            y2: { position: "right", grid: { drawOnChartArea: false }, title: { display: true, text: "Hp nT" } },
-          }),
-        });
-      } catch (e) {
-        toast("Storico non disponibile: " + e.message, true);
-      }
-    }
-
-    function modelCharts() {
-      const rows = state.model.rows;
-      const pt = (f) => rows.map((r) => ({ x: r.year, y: r[f] }));
-      const yearOpts = (scales) => ({
-        responsive: true, maintainAspectRatio: false, animation: false, parsing: false,
-        interaction: { mode: "index", intersect: false },
-        plugins: { legend: { labels: { boxWidth: 12 } }, tooltip: { callbacks: { title: (it) => (it.length ? String(it[0].parsed.x) : "") } } },
-        scales: { x: { type: "linear", min: YEAR_MIN, max: YEAR_MAX, ticks: { stepSize: 10, callback: (v) => String(v) } }, ...scales },
-      });
-      const ds = (label, f, color, extra = {}) => ({ label, data: pt(f), borderColor: color, backgroundColor: color, borderWidth: 2, pointRadius: 0, ...extra });
-      makeChart("chModelF", {
-        type: "line",
-        data: { datasets: [ds("P1 suolo", "p1_nt", "#00e5ff"), ds("P2 SW Africa", "p2_nt", "#f43f5e", { borderDash: [5, 4] }), ds("Minimo a 400 km", "iss_nt", "#a855f7")] },
-        options: yearOpts({ y: { title: { display: true, text: "nT" } } }),
-      });
-      makeChart("chModelArea", {
-        type: "line",
-        data: {
-          datasets: [
-            ds("Area < 24.000 nT", "area_24k_mkm2", "#f59e0b", { fill: "origin", backgroundColor: "rgba(245,158,11,0.18)" }),
-            ds("Area < 23.000 nT", "area_23k_mkm2", "#f43f5e", { fill: "origin", backgroundColor: "rgba(244,63,94,0.22)" }),
-            ds("Deriva P1 (km/anno)", "drift_km_yr", "#10b981", { yAxisID: "y2" }),
-          ],
-        },
-        options: yearOpts({
-          y: { min: 0, title: { display: true, text: "milioni km²" } },
-          y2: { position: "right", min: 0, grid: { drawOnChartArea: false }, title: { display: true, text: "km/anno" } },
-        }),
-      });
-    }
-
-    function modelTable() {
-      const cur = Math.floor(NOW_YEAR);
-      $("modelBody").innerHTML = state.model.rows
-        .filter((r) => r.year % 5 === 0 || r.year === cur)
-        .map((r) => `<tr class="${r.year === cur ? "now" : r.source === "IGRF+SV" ? "proj" : ""}">
-          <td>${r.year}${r.year === cur ? " (oggi)" : ""}</td>
-          <td style="color:#00e5ff">${fmt(r.p1_nt)}</td>
-          <td>${latS(r.p1_lat)} ${lonS(r.p1_lon)}</td>
-          <td style="color:${r.p2_active ? "#fda4af" : "#64748b"}">${r.p2_active ? `${fmt(r.p2_nt)} nT · ${latS(r.p2_lat)} ${lonS(r.p2_lon)}` : "non separato"}</td>
-          <td>${fmt(r.iss_nt)} nT</td>
-          <td>${fmt(r.drift_km_yr, 1)} km/a ${compass(r.drift_az_deg)}</td>
-          <td>${fmt(r.area_24k_mkm2, 1)} M km²</td>
-          <td>${fmt(r.area_23k_mkm2, 1)} M km²</td>
-          <td>${r.source}</td>
-        </tr>`).join("");
-    }
-
-    function modelKpis() {
-      const r = modelRow(Math.floor(NOW_YEAR));
-      const r1900 = modelRow(1900);
-      if (!r) return;
-      $("kP1").innerHTML = `${fmt(r.p1_nt)} <small>nT (${r.year})</small>`;
-      const drop = ((r.p1_nt - r1900.p1_nt) / r1900.p1_nt) * 100;
-      $("kTagP1").textContent = `${fmt(drop, 1)}% DAL 1900`;
-      $("kP1sub").innerHTML = `${latS(r.p1_lat)} ${lonS(r.p1_lon)} • 1900: <strong>${fmt(r1900.p1_nt)} nT</strong> a ${lonS(r1900.p1_lon)}`;
-      $("kDrift").innerHTML = `${fmt(r.drift_km_yr, 1)} <small>km/anno</small>`;
-      $("kTagDrift").textContent = `AZIMUT ${r.drift_az_deg}° ${compass(r.drift_az_deg)}`;
-      const lonShift = r.p1_lon - r1900.p1_lon;
-      $("kDriftSub").innerHTML = `Dal 1900 il minimo si è spostato di <strong>${fmt(Math.abs(lonShift), 1)}°</strong> verso Ovest (media ${fmt(Math.abs(lonShift) / (r.year - 1900), 2)}°/anno)`;
-      $("kP2").innerHTML = r.p2_active ? `${fmt(r.p2_nt)} <small>nT</small>` : `-- <small>nT</small>`;
-      const first = state.model.rows.find((x) => x.p2_active);
-      $("kTagP2").textContent = first ? `SEPARATO DAL ${first.year}` : "NON SEPARATO";
-      $("kP2sub").innerHTML = `${r.p2_active ? `${latS(r.p2_lat)} ${lonS(r.p2_lon)} • ` : ""}minimo a 400 km: <strong>${fmt(r.iss_nt)} nT</strong>`;
-    }
-
-    // ---------------------------------------------------------------------
-    // Dati live dal Worker
-    // ---------------------------------------------------------------------
-    async function loadLatest() {
-      const badge = $("liveBadge"), dot = $("radarDot");
-      try {
-        const lt = await getJSON("/api/latest");
-        const g = lt.goes, k = lt.kp, d = lt.dst;
-        const S = lt.scales.S, G = lt.scales.G;
-        $("kP10").innerHTML = `${fmtSci(g?.p10)} <small>pfu</small>`;
-        $("kTagS").textContent = S === null ? "S--" : S === 0 ? "S0 QUIETE" : `S${S} TEMPESTA`;
-        $("kTagS").className = "kpi-tag" + (S >= 1 ? " danger" : "");
-        $("kP10sub").innerHTML = `≥100 MeV: <strong>${fmtSci(g?.p100)}</strong> • max 24 h ≥10 MeV: <strong>${fmtSci(lt.last_24h?.p10max)}</strong> • ${g ? isoShort(g.t) + " UTC" : ""}`;
-        $("kKp").innerHTML = `Kp ${fmt(k?.kp, 2)} <small>Dst ${fmt(d?.dst)} nT</small>`;
-        $("kTagG").textContent = G === null ? "G--" : G === 0 ? "G0 QUIETE" : `G${G} TEMPESTA`;
-        $("kTagG").className = "kpi-tag " + (G >= 1 ? "warn" : "green");
-        $("kKpSub").innerHTML = `Kp ${k ? isoShort(k.t) : "--"} • Dst ${d ? isoShort(d.t) : "--"} UTC • GOES Hp <strong>${fmt(g?.hp, 1)} nT</strong>`;
-        const run = lt.last_update;
-        $("lastRun").textContent = run ? `${isoShort(run.t)} UTC (${run.trigger})` : "mai";
-        const age = g ? Date.now() / 1000 - g.t : Infinity;
-        if (age < 14 * 3600) { badge.textContent = "ARCHIVIO: AGGIORNATO"; badge.className = "status-pill"; dot.className = "radar-dot"; }
-        else if (age < 30 * 3600) { badge.textContent = "ARCHIVIO: IN ATTESA DEL PROSSIMO GIRO"; badge.className = "status-pill warn"; dot.className = "radar-dot stale"; }
-        else { badge.textContent = "ARCHIVIO: FERMO"; badge.className = "status-pill bad"; dot.className = "radar-dot down"; }
-      } catch (e) {
-        badge.textContent = "ARCHIVIO: NON RAGGIUNGIBILE"; badge.className = "status-pill bad"; dot.className = "radar-dot down";
-        $("kP10").innerHTML = `-- <small>pfu</small>`;
-        $("kP10sub").textContent = "nessun dato: Worker non raggiungibile";
-      }
-    }
-
-    async function loadRuns() {
-      try {
-        const runs = await getJSON("/api/runs");
-        $("runsBody").innerHTML = runs.map((r) => `<tr><td>${isoShort(r.t)}</td><td>${r.trigger}</td><td>${r.rows}</td><td style="color:${r.errors ? "#fbbf24" : "#6ee7b7"}" title="${(r.errors ?? "").replace(/"/g, "&quot;")}">${r.errors ? "parziale" : "ok"}</td></tr>`).join("")
-          || `<tr><td colspan="4">nessun aggiornamento registrato</td></tr>`;
-      } catch { $("runsBody").innerHTML = `<tr><td colspan="4">non disponibile</td></tr>`; }
-    }
-
-    async function refresh() {
-      const btn = $("refreshBtn");
-      btn.disabled = true;
-      try {
-        const token = store.get();
-        if (token) {
-          const r = await fetch(API + "/api/update", { method: "POST", headers: { Authorization: "Bearer " + token } });
-          const body = await r.json().catch(() => ({}));
-          if (r.ok) toast(`Archivio aggiornato da NOAA: ${body.rows} righe nuove o riviste${body.errors?.length ? " (fonti mancanti: " + body.errors.length + ")" : ""}.`);
-          else if (r.status === 401) { toast("Chiave non valida: rimossa da questo browser.", true); store.set(null); }
-          else toast(body.error ?? `Aggiornamento non riuscito (HTTP ${r.status})`, true);
-        } else {
-          toast("Dati ricaricati dall'archivio. Il Worker legge NOAA alle 06:07 e alle 18:07 UTC.");
-        }
-        await Promise.all([loadLatest(), loadHistory(), loadRuns()]);
-      } finally {
-        btn.disabled = false;
-      }
-    }
-
-    // ---------------------------------------------------------------------
-    // Avvio
-    // ---------------------------------------------------------------------
-    function wire() {
-      $("yearSlider").min = YEAR_MIN;
-      $("yearSlider").max = YEAR_MAX;
-      $("yearSlider").addEventListener("input", (e) => setYear(e.target.value, true));
-      $("yearSlider").addEventListener("change", (e) => setYear(e.target.value, false));
-      $("yearButtons").innerHTML = [1900, 1950, 1980, 2000, 2010, Math.floor(NOW_YEAR), YEAR_MAX]
-        .map((y) => `<button data-y="${y}">${y === Math.floor(NOW_YEAR) ? y + " (oggi)" : y === YEAR_MAX ? y + "*" : y}</button>`).join("");
-      $("yearButtons").addEventListener("click", (e) => { const y = e.target.dataset?.y; if (y) setYear(y); });
-      $("playBtn").addEventListener("click", togglePlay);
-      const setAlt = (alt) => {
-        state.alt = alt;
-        $("altGround").classList.toggle("on", alt === 0);
-        $("altIss").classList.toggle("on", alt === 400);
-        drawColorbar();
-        drawMap();
-      };
-      $("altGround").addEventListener("click", () => setAlt(0));
-      $("altIss").addEventListener("click", () => setAlt(400));
-      $("rangeSeg").addEventListener("click", (e) => {
-        const d = Number(e.target.dataset?.days);
-        if (!d) return;
-        state.days = d;
-        [...$("rangeSeg").children].forEach((b) => b.classList.toggle("on", Number(b.dataset.days) === d));
-        loadHistory();
-      });
-      $("refreshBtn").addEventListener("click", refresh);
-      $("keyBtn").addEventListener("click", () => {
-        const cur = store.get();
-        const v = prompt(cur ? "Chiave salvata in questo browser. Lascia vuoto per rimuoverla, oppure incollane una nuova:" : "Chiave per gli aggiornamenti manuali (solo proprietario):", "");
-        if (v === null) return;
-        store.set(v.trim() || null);
-        toast(v.trim() ? "Chiave salvata in questo browser: «Aggiorna» ora interroga NOAA." : "Chiave rimossa.");
-      });
-      $("pngBtn").addEventListener("click", () => {
-        // esporta il campo calcolato (senza le tessere di sfondo, che hanno CORS)
-        const { url } = computeField(state.year, state.alt, false);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `saa_campo_F_${state.year}_${state.alt ? "400km" : "suolo"}.png`;
-        a.click();
-      });
-    }
-
-    async function start() {
-      wire();
-      drawColorbar();
-      if (typeof L !== "undefined") initMap();
-      try {
-        state.model = await getJSON("/api/model");
-      } catch {
-        try { state.model = await (await fetch("./model.json")).json(); } catch { toast("Serie del modello non disponibile", true); }
-      }
-      if (state.model) { modelKpis(); modelTable(); modelCharts(); }
-      setYear(state.year);
-      loadLatest();
-      loadHistory();
-      loadRuns();
-      setInterval(loadLatest, 10 * 60 * 1000);
-    }
-    start();
-  </script>
+  <script type="module" src="./app.js"></script>
 </body>
 </html>

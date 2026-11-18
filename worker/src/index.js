@@ -211,6 +211,116 @@ export function gScale(kp) {
   return kp >= 9 ? 5 : kp >= 8 ? 4 : kp >= 7 ? 3 : kp >= 6 ? 2 : kp >= 5 ? 1 : 0;
 }
 
+// ---- statistiche dell'archivio --------------------------------------------
+
+/**
+ * Raggruppa in episodi i tempi (ordinati) che superano una soglia: due punti
+ * distano al massimo `gap` secondi per stare nello stesso episodio.
+ */
+export function episodes(rows, gap, pick = "max") {
+  const out = [];
+  let cur = null;
+  for (const [t, v] of rows) {
+    if (cur && t - cur.end <= gap) {
+      cur.end = t;
+      if (pick === "max" ? v > cur.peak : v < cur.peak) {
+        cur.peak = v;
+        cur.peak_t = t;
+      }
+    } else {
+      cur = { start: t, end: t, peak: v, peak_t: t };
+      out.push(cur);
+    }
+  }
+  return out;
+}
+
+export async function stats(db, nowS) {
+  const since30 = nowS - 30 * DAY;
+  const q = (sql, ...b) => (b.length ? db.prepare(sql).bind(...b) : db.prepare(sql));
+  const [count, kpHist, maxP10, maxP100, maxE2, maxKp, minDst, storms, protons, dstStorms, dKp, dDst, dGoes] = await db.batch([
+    q(`SELECT (SELECT COUNT(*) FROM goes) AS goes, (SELECT COUNT(*) FROM kp) AS kp, (SELECT COUNT(*) FROM dst) AS dst,
+              (SELECT COUNT(*) FROM runs) AS runs, (SELECT MIN(t) FROM goes) AS first, (SELECT MAX(t) FROM goes) AS last`),
+    q("SELECT CAST(kp AS INTEGER) AS b, COUNT(*) AS n FROM kp GROUP BY b ORDER BY b"),
+    q("SELECT t, p10 AS v FROM goes WHERE p10 IS NOT NULL ORDER BY p10 DESC LIMIT 1"),
+    q("SELECT t, p100 AS v FROM goes WHERE p100 IS NOT NULL ORDER BY p100 DESC LIMIT 1"),
+    q("SELECT t, e2 AS v FROM goes WHERE e2 IS NOT NULL ORDER BY e2 DESC LIMIT 1"),
+    q("SELECT t, kp AS v FROM kp ORDER BY kp DESC LIMIT 1"),
+    q("SELECT t, dst AS v FROM dst ORDER BY dst ASC LIMIT 1"),
+    q("SELECT t, kp FROM kp WHERE kp >= 5 ORDER BY t LIMIT 5000"),
+    q("SELECT t, p10 FROM goes WHERE p10 >= 10 ORDER BY t LIMIT 5000"),
+    q("SELECT t, dst FROM dst WHERE dst <= -50 ORDER BY t LIMIT 5000"),
+    q("SELECT (t / 86400) * 86400 AS d, MAX(kp) AS v FROM kp WHERE t > ? GROUP BY t / 86400 ORDER BY d", since30),
+    q("SELECT (t / 86400) * 86400 AS d, MIN(dst) AS v FROM dst WHERE t > ? GROUP BY t / 86400 ORDER BY d", since30),
+    q("SELECT (t / 86400) * 86400 AS d, MAX(p10) AS p10, MAX(e2) AS e2 FROM goes WHERE t > ? GROUP BY t / 86400 ORDER BY d", since30),
+  ]);
+  const one = (r) => (r.results[0] ? { t: r.results[0].t, time: isoT(r.results[0].t), v: r.results[0].v } : null);
+  const ev = (list) =>
+    list.map((e) => ({ start: isoT(e.start), end: isoT(e.end), peak: e.peak, peak_time: isoT(e.peak_t), hours: Math.round((e.end - e.start) / 360) / 10 }));
+  const hist = Array(10).fill(0);
+  for (const r of kpHist.results) if (r.b >= 0 && r.b <= 9) hist[r.b] += r.n;
+  const daily = new Map();
+  const day = (d) => daily.get(d) ?? daily.set(d, { day: isoT(d).slice(0, 10), kp: null, dst: null, p10: null, e2: null }).get(d);
+  for (const r of dKp.results) day(r.d).kp = r.v;
+  for (const r of dDst.results) day(r.d).dst = r.v;
+  for (const r of dGoes.results) Object.assign(day(r.d), { p10: r.p10, e2: r.e2 });
+  const c = count.results[0] ?? {};
+  return {
+    archive: { ...c, first: isoT(c.first), last: isoT(c.last), days: c.first ? Math.round(((c.last - c.first) / DAY) * 10) / 10 : 0 },
+    records: { p10_max: one(maxP10), p100_max: one(maxP100), e2_max: one(maxE2), kp_max: one(maxKp), dst_min: one(minDst) },
+    kp_histogram: hist,
+    storms_g: ev(episodes(storms.results.map((r) => [r.t, r.kp]), 3 * 3600)).map((e) => ({ ...e, G: gScale(e.peak), hours: e.hours + 3 })),
+    storms_dst: ev(episodes(dstStorms.results.map((r) => [r.t, r.dst]), 3600, "min")),
+    proton_events: ev(episodes(protons.results.map((r) => [r.t, r.p10]), 1800)).map((e) => ({ ...e, S: sScale(e.peak) })),
+    daily_30d: [...daily.entries()].sort((a, b) => a[0] - b[0]).map(([, v]) => v),
+  };
+}
+
+// ---- ISS in tempo reale -----------------------------------------------------
+
+const ISS_URL = "https://api.wheretheiss.at/v1/satellites/25544/positions";
+
+/**
+ * Posizione della ISS ora e traccia da -30 a +65 minuti (passo 5 min), dal
+ * servizio pubblico wheretheiss.at. Risposta tenuta 20 s nella cache di
+ * Cloudflare: il servizio accetta circa una richiesta al secondo.
+ */
+async function iss(request, ctx, now, fetchFn) {
+  const cache = typeof caches !== "undefined" ? caches.default : null;
+  const key = new Request(new URL("/api/iss", request.url).toString());
+  if (cache) {
+    const hit = await cache.match(key);
+    if (hit) return hit;
+  }
+  const t0 = Math.floor(now / 1000);
+  const times = Array.from({ length: 20 }, (_, i) => t0 + (i - 6) * 300);
+  const get = async (ts) => {
+    const res = await fetchFn(`${ISS_URL}?timestamps=${ts.join(",")}&units=kilometers`, {
+      headers: { "User-Agent": "saa-observatory-worker", Accept: "application/json" },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  };
+  try {
+    // in sequenza: due richieste in parallelo possono superare il limite
+    const a = await get([t0, ...times.slice(0, 9)]);
+    const b = await get(times.slice(9));
+    const pt = (p) => ({ t: p.timestamp, lat: p.latitude, lon: p.longitude, alt: Math.round(p.altitude * 10) / 10 });
+    const nowP = a[0];
+    const body = {
+      now: { ...pt(nowP), velocity_kmh: Math.round(nowP.velocity), visibility: nowP.visibility },
+      track: [...new Map([...a.slice(1), ...b].map((p) => [p.timestamp, pt(p)])).values()].sort((x, y) => x.t - y.t),
+      source: "wheretheiss.at",
+    };
+    const res = json(body, 200, { "Cache-Control": "public, max-age=20" });
+    if (cache && ctx?.waitUntil) ctx.waitUntil(cache.put(key, res.clone()));
+    return res;
+  } catch (e) {
+    return json({ error: `posizione ISS non disponibile (${e.message})` }, 502);
+  }
+}
+
 // ---- HTTP ------------------------------------------------------------------
 
 const CORS = { "Access-Control-Allow-Origin": "*" };
@@ -364,6 +474,10 @@ export async function handle(request, env, ctx, now = Date.now(), fetchFn = fetc
       }
       return json(MODEL, 200, cache);
     }
+    case "/api/stats":
+      return json(await stats(env.DB, nowS), 200, { "Cache-Control": "public, max-age=600" });
+    case "/api/iss":
+      return iss(request, ctx, now, fetchFn);
     case "/api/runs": {
       const rows = await env.DB.prepare("SELECT t, trigger, rows, errors FROM runs ORDER BY t DESC LIMIT 50").all();
       return json(rows.results.map((r) => ({ ...r, time: isoT(r.t) })));
@@ -383,6 +497,8 @@ export async function handle(request, env, ctx, now = Date.now(), fetchFn = fetc
           "GET /api/latest",
           "GET /api/history?series=goes|kp|dst&days=7[&step=s][&format=csv]",
           "GET /api/model[?format=csv]",
+          "GET /api/stats",
+          "GET /api/iss",
           "GET /api/runs",
           "GET /api/health",
           "POST /api/update (Authorization: Bearer <token>)",

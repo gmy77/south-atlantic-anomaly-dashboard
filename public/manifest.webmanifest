@@ -1,0 +1,15 @@
+{
+  "name": "South Atlantic Anomaly Observatory",
+  "short_name": "Echo SAA",
+  "description": "Anomalia del Sud Atlantico: campo IGRF-14 1900–2030, ISS in tempo reale e storico NOAA su Cloudflare D1.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#060911",
+  "theme_color": "#060911",
+  "lang": "it",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
